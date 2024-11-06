@@ -1,0 +1,371 @@
+##Ex 1
+
+import numpy as np
+def unitStep(v):
+    if v>=0:
+        return 1
+    else:
+        return 0
+def perceptronModel(x, w, b):
+    v = np.dot(w, x)+ b
+    y = unitStep(v)
+    return y
+def OR_logicFunction(x):
+    w = np.array([1,1])
+    b =-0.5
+    return perceptronModel(x, w,b)
+def AND_logicFunction(x): 
+    w = np.array([1, 1])  # weights for the AND gate
+    b = -1.5  # bias term
+    return perceptronModel(x, w, b) 
+test1= np.array([0,1])
+test2= np.array([1,1])
+test3= np.array([0,0])
+test4= np.array([1,0])
+print("OR({},{}) = {}".format(0,1, OR_logicFunction(test1)))
+print("OR({},{}) = {}".format(1,1, OR_logicFunction(test2)))
+print("OR({},{}) = {}".format(0,0, OR_logicFunction(test3)))
+print("OR({},{}) = {}".format(1,0, OR_logicFunction(test4)))
+
+print(" ")
+
+print("AND({}, {}) = {}".format(0, 1, AND_logicFunction(test1))) 
+print("AND({}, {}) = {}".format(1, 1, AND_logicFunction(test2))) 
+print("AND({}, {}) = {}".format(0, 0, AND_logicFunction(test3))) 
+print("AND({}, {}) = {}".format(1, 0, AND_logicFunction(test4)))
+
+##Ex2
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Activation
+import matplotlib.pyplot as plt
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data(path = 'mnist_db')
+# Cast the records into float values
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+# normalize image pixel values by dividing
+# by 255 gray_scale
+gray_scale=  255 
+x_train /= gray_scale 
+x_test /= gray_scale 
+print("Feature matrix:", x_train.shape)
+print("Target matrix:", x_test.shape)
+print("Feature matrix:", y_train.shape)
+print("Target matrix:", y_test.shape)
+fig, ax = plt.subplots(10, 10)
+k = 0
+for i in range(10):
+    for j in range(10):
+        ax[i][j].imshow(x_train[k].reshape(28, 28),
+        aspect='auto')
+k += 1
+plt.show()
+model = Sequential([
+# reshape 28 row * 28 column data to 28*28 rows
+Flatten(input_shape=(28, 28)),
+# dense layer 1
+Dense(256, activation='sigmoid'),
+# dense layer 2
+Dense(128, activation='sigmoid'),
+# output layer
+Dense(10, activation='sigmoid'),
+])
+model.compile(optimizer='adam',
+loss='sparse_categorical_crossentropy',
+metrics=['accuracy'])
+model.fit(x_train, y_train, epochs=10,
+batch_size=2000,
+validation_split=0.2)
+results = model.evaluate(x_test, y_test, verbose = 0)
+print('test loss, test acc:', results)
+
+
+##Ex3
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.utils import to_categorical
+
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+X_train = X_train.reshape(X_train.shape[0], 28, 28, 1).astype('float32') / 255.0
+X_test = X_test.reshape(X_test.shape[0], 28, 28, 1).astype('float32') / 255.0
+
+y_train = to_categorical(y_train, num_classes=10)
+y_test = to_categorical(y_test, num_classes=10)
+
+
+model = Sequential()
+
+
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+
+model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+
+model.add(Flatten())
+
+
+model.add(Dense(128, activation='relu'))
+
+
+model.add(Dropout(0.5))
+
+
+model.add(Dense(10, activation='softmax'))
+
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+
+history = model.fit(X_train, y_train, epochs=10, batch_size=128, validation_split=0.2, verbose=2)
+
+
+test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=2)
+
+print(f'Test Accuracy: {test_accuracy:.4f}')
+
+
+##Ex4
+
+import keras
+from keras.datasets import mnist
+from keras.models import Sequential # Import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Flatten, Dense # Import necessary layers
+import matplotlib.pyplot as plt
+import numpy as np
+from tensorflow.keras.datasets import mnist
+
+# Load dataset from local file
+(X_train, y_train), (X_test, y_test) = mnist.load_data(path='mnist.npz')
+
+#(X_train, y_train), (X_test, y_test) = mnist.load_data()
+fig = plt.figure()
+for i in range(9):
+    plt.subplot(3, 3, i+1)
+    plt.tight_layout()
+    plt.imshow(X_train[i], cmap='gray', interpolation='none')
+    plt.title("Digit: {}".format(y_train[i]))
+    plt.xticks([])
+    plt.yticks([])
+plt.show()
+#reshaping
+#this assumes our data format
+#For 3D data,"channels_last" assumes (conv_dim1, conv_dim2, conv_dim3, channels) while
+#"channels_first" assumes (channels, conv_dim1, conv_dim2, conv_dim3).
+img_rows, img_cols=28, 28
+if keras.backend.image_data_format() == 'channels_first':
+    X_train = X_train.reshape(X_train.shape[0], 1, img_rows, img_cols)
+    X_test = X_test.reshape(X_test.shape[0], 1, img_rows, img_cols)
+    input_shape = (1, img_rows, img_cols)
+else:
+    X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols, 1)
+    X_test = X_test.reshape(X_test.shape[0], img_rows, img_cols, 1)
+    input_shape = (img_rows, img_cols, 1)
+#more reshaping
+X_train = X_train.astype('float32')
+X_test = X_test.astype('float32')
+X_train /= 255
+X_test /= 255
+print('X_train shape:', X_train.shape) #X_train shape: (60000, 28, 28, 1)
+import keras
+#set number of categories
+num_category = 10
+# convert class vectors to binary class matrices
+y_train = keras.utils.to_categorical(y_train, num_category)
+y_test = keras.utils.to_categorical(y_test, num_category)
+##model building
+model = Sequential()
+#convolutional layer with rectified linear unit activation
+model.add(Conv2D(32, kernel_size=(3, 3),
+activation='relu',input_shape=input_shape))
+#32 convolution filters used each of size 3x3
+#again
+model.add(Conv2D(64, (3, 3), activation='relu'))
+#64 convolution filters used each of size 3x3
+#choose the best features via pooling
+model.add(MaxPooling2D(pool_size=(2, 2)))
+#randomly turn neurons on and off to improve convergence
+model.add(Dropout(0.25))
+#flatten since too many dimensions, we only want a classification output
+model.add(Flatten())
+#fully connected to get all relevant data
+model.add(Dense(128, activation='relu'))
+#one more dropout for convergence' sake :)
+model.add(Dropout(0.5))
+#output a softmax to squash the matrix into output probabilities
+model.add(Dense(num_category, activation='softmax'))
+#Adaptive learning rate (adaDelta) is a popular form of gradient descent rivaled only by adam and adagrad
+#categorical ce since we have multiple classes (10)
+model.compile(loss=keras.losses.categorical_crossentropy,optimizer=keras.optimizers.Adadelta(),metrics=['accuracy'])
+batch_size = 128
+num_epoch = 10
+#model training
+model_log = model.fit(X_train, y_train,
+    batch_size=batch_size,
+    epochs=num_epoch,
+    verbose=1,
+    validation_data=(X_test, y_test))
+score = model.evaluate(X_test, y_test, verbose=0)
+print('Test loss:', score[0]) #Test loss: 0.0296396646054
+print('Test accuracy:', score[1]) #Test accuracy: 0.9904
+fig=plt.figure()
+plt.subplot(2, 1, 1)
+plt.plot(model_log.history['accuracy']) # Updated to 'accuracy'
+plt.plot(model_log.history['val_accuracy']) # Updated to 'val_accuracy'
+plt.title('Model Accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='lower right')
+plt.subplot(2, 1, 2)
+plt.plot(model_log.history['loss'])
+plt.plot(model_log.history['val_loss'])
+plt.title('Model Loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper right')
+plt.tight_layout()
+plt.show()
+model_digit_json=model.to_json()
+with open("model_digit.json", "w") as json_file:
+    json_file.write(model_digit_json)
+# Serialize weights to HDF5
+model.save_weights("model_digit.weights.h5") # Corrected filename
+print("Saved model to disk")
+
+
+
+##EX5
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from tensorflow.keras.datasets import imdb
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Bidirectional
+from tensorflow.keras.utils import to_categorical
+
+# Load the IMDB dataset
+(train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
+
+# Display dataset shape
+print(f'Training data shape: {train_data.shape}')
+print(f'Training labels shape: {train_labels.shape}')
+print(f'Testing data shape: {test_data.shape}')
+print(f'Testing labels shape: {test_labels.shape}')
+
+# Pad sequences to a maximum length of 500
+max_length = 500
+train_data = pad_sequences(train_data, maxlen=max_length)
+test_data = pad_sequences(test_data, maxlen=max_length)
+
+# Convert labels to categorical (if necessary)
+train_labels = np.array(train_labels)
+test_labels = np.array(test_labels)
+
+# Check padded data shape
+print(f'Padded training data shape: {train_data.shape}')
+print(f'Padded testing data shape: {test_data.shape}')
+
+def create_model(is_bidirectional=False):
+    model = Sequential()
+    model.add(Embedding(input_dim=10000, output_dim=128, input_length=max_length))
+    if is_bidirectional:
+        model.add(Bidirectional(LSTM(64)))
+    else:
+        model.add(LSTM(64))
+    model.add(Dense(1, activation='sigmoid'))  # Binary classification
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+# Create LSTM model
+lstm_model = create_model()
+lstm_model.summary()
+
+# Train LSTM model
+lstm_history = lstm_model.fit(train_data, train_labels, epochs=5, batch_size=64, validation_split=0.2)
+
+# Evaluate LSTM model
+lstm_loss, lstm_accuracy = lstm_model.evaluate(test_data, test_labels)
+print(f'LSTM Test Accuracy: {lstm_accuracy:.2f}')
+
+# Create BiLSTM model
+bilstm_model = create_model(is_bidirectional=True)
+bilstm_model.summary()
+
+# Train BiLSTM model
+bilstm_history = bilstm_model.fit(train_data, train_labels, epochs=5, batch_size=64, validation_split=0.2)
+
+# Evaluate BiLSTM model
+bilstm_loss, bilstm_accuracy = bilstm_model.evaluate(test_data, test_labels)
+print(f'BiLSTM Test Accuracy: {bilstm_accuracy:.2f}')
+
+# Plot training & validation accuracy
+plt.plot(lstm_history.history['accuracy'], label='LSTM Training Accuracy')
+plt.plot(lstm_history.history['val_accuracy'], label='LSTM Validation Accuracy')
+plt.plot(bilstm_history.history['accuracy'], label='BiLSTM Training Accuracy')
+plt.plot(bilstm_history.history['val_accuracy'], label='BiLSTM Validation Accuracy')
+plt.title('Model Accuracy Comparison')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+
+##Ex 6
+
+from keras.datasets import imdb
+from keras.preprocessing import sequence
+from keras.models import Sequential
+from keras.layers import Embedding, LSTM, Dense, Dropout
+vocabulary_size = 5000
+(X_train, y_train), (X_test, y_test) =imdb.load_data(path = 'imdb.npz',num_words=vocabulary_size)
+print('Loaded dataset with {} training samples, {} test samples'.format(len(X_train), len(X_test)))
+# Map review back to original words
+word2id = imdb.get_word_index(path ='imdb_word_index.json')
+id2word = {i: word for word, i in word2id.items()}
+print('---review with words---')
+print([id2word.get(i, ' ') for i in X_train[6]])
+print('---label---')
+print(y_train[6])
+# Maximum and minimum review lengths
+print('Maximum review length: {}'
+.format(len(max((X_train + X_test),
+key=len))))
+print('Minimum review length: {}'
+.format(len(min((X_train + X_test),
+key=len))))
+# Pad sequences
+max_words = 500
+X_train = sequence.pad_sequences(X_train, maxlen=max_words)
+X_test = sequence.pad_sequences(X_test, maxlen=max_words)
+# Design RNN model
+model = Sequential()
+embedding_size = 32
+model.add(Embedding(vocabulary_size, embedding_size,
+input_length=max_words))
+model.add(LSTM(100))
+model.add(Dense(1, activation='sigmoid'))
+# Model summary
+print(model.summary())
+# Compile model
+model.compile(loss='binary_crossentropy', optimizer='adam',
+metrics=['accuracy'])
+# Train model
+batch_size = 64
+num_epochs = 3
+X_valid, y_valid = X_train[:batch_size], y_train[:batch_size]
+X_train2, y_train2 = X_train[batch_size:], y_train[batch_size:]
+model.fit(X_train2, y_train2, validation_data=(X_valid, y_valid),
+batch_size=batch_size, epochs=num_epochs)
+# Evaluate model
+scores = model.evaluate(X_test, y_test, verbose=0)
+print('Test accuracy:', scores[1])
